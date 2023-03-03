@@ -5,11 +5,14 @@ Function Get-ZabbixHost {
     [PARAMETER(Mandatory=$True, Position=1,HelpMessage = "Username",ParameterSetName='Default')][PARAMETER(ParameterSetName='ID')][PARAMETER(ParameterSetName='Name')][String]$Username,
     [PARAMETER(Mandatory=$True, Position=2,HelpMessage = "Password",ParameterSetName='Default')][PARAMETER(ParameterSetName='ID')][PARAMETER(ParameterSetName='Name')][String]$Password,
     [PARAMETER(Mandatory=$False,Position=3,HelpMessage = "Silent - if set then function will not show error messages",ParameterSetName='Default')][PARAMETER(ParameterSetName='ID')][PARAMETER(ParameterSetName='Name')][bool]$Silent=$false,
-	[PARAMETER(Mandatory=$True, Position=4,HelpMessage = "ID",ParameterSetName='ID')][int[]]$ID = $null,
-	[PARAMETER(Mandatory=$True, Position=4,HelpMessage = "Name",ParameterSetName='Name')][String[]]$Name = $null
+    [PARAMETER(Mandatory=$False,Position=4,HelpMessage = "IncludeTemplateID",ParameterSetName='Default')][PARAMETER(ParameterSetName='ID')][PARAMETER(ParameterSetName='Name')][switch]$IncludeTemplateID,
+	[PARAMETER(Mandatory=$True, Position=5,HelpMessage = "ID",ParameterSetName='ID')][int[]]$ID = $null,
+	[PARAMETER(Mandatory=$True, Position=5,HelpMessage = "Name",ParameterSetName='Name')][String[]]$Name = $null
   )
   $RetVal = $null
  
+  $Zabbix = New-ZabbixAPIURL -Zabbix $Zabbix
+  
   $AuthToken = ''
   $UserLoginJSON = @{
     "jsonrpc"= "2.0"
@@ -66,6 +69,11 @@ Function Get-ZabbixHost {
         }
       }
       
+	  if ($IncludeTemplateID) {
+	    $TempHostObj = $HostJSON | ConvertFrom-Json
+		$TempHostObj.params |  Add-Member -NotePropertyName 'selectParentTemplates' -NotePropertyValue @('templateid')
+		$HostJSON = $TempHostObj | ConvertTo-Json -Depth 5
+	  }
 	  #$HostJSON
 	  
 	  $RM = Invoke-RestMethod -Method "POST" -Uri "$($Zabbix)" -ContentType "application/json" -Body $HostJSON
