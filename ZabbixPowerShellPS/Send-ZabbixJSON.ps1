@@ -28,7 +28,11 @@ Function Send-ZabbixJSON {
     if ($RM.Result -and ($RM.Result -match '^[A-F0-9]{32}$')) {   
       $AuthToken = $RM.Result
 
-	  $RM = Invoke-RestMethod -Method "POST" -Uri "$($Zabbix)" -ContentType "application/json" -Body $JSON
+      $JSONObject = $JSON | ConvertFrom-JSON
+      $JSONObject.auth = $AuthToken
+	  $JSONToSend = $JSONObject | ConvertTo-Json -Depth 7
+
+	  $RM = Invoke-RestMethod -Method "POST" -Uri "$($Zabbix)" -ContentType "application/json" -Body $JSONToSend
 	  if ($RM.PSObject.Properties.Match('Result')) {
 		$RetVal = $RM.Result
 	  }`

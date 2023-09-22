@@ -5,6 +5,7 @@ Function Get-ZabbixItem {
     [PARAMETER(Mandatory=$True, Position=1,HelpMessage = "Username",ParameterSetName='Default')][PARAMETER(ParameterSetName='ID')][PARAMETER(ParameterSetName='Name')][PARAMETER(ParameterSetName='HostID')][String]$Username,
     [PARAMETER(Mandatory=$True, Position=2,HelpMessage = "Password",ParameterSetName='Default')][PARAMETER(ParameterSetName='ID')][PARAMETER(ParameterSetName='Name')][PARAMETER(ParameterSetName='HostID')][String]$Password,
     [PARAMETER(Mandatory=$False,Position=3,HelpMessage = "Silent - if set then function will not show error messages",ParameterSetName='Default')][PARAMETER(ParameterSetName='ID')][PARAMETER(ParameterSetName='Name')][PARAMETER(ParameterSetName='HostID')][bool]$Silent=$false,
+    [PARAMETER(Mandatory=$False,Position=4,HelpMessage = "IncludePreprocessing",ParameterSetName='Default')][PARAMETER(ParameterSetName='ID')][PARAMETER(ParameterSetName='Name')][switch]$IncludePreprocessing,
 	[PARAMETER(Mandatory=$True, Position=5,HelpMessage = "ID",ParameterSetName='ID')][int[]]$ID = $null,
 	[PARAMETER(Mandatory=$True, Position=5,HelpMessage = "Name",ParameterSetName='Name')][String[]]$Name = $null,
 	[PARAMETER(Mandatory=$True, Position=5,HelpMessage = "Host ID",ParameterSetName='HostID')][int[]]$HostID = $null
@@ -33,7 +34,7 @@ Function Get-ZabbixItem {
 	  switch ( $PSCmdlet.ParameterSetName )
       {
         'ID' {
-	      $HostJSON = @{
+	      $ItemJSON = @{
             "jsonrpc"= "2.0"
             "method"= "item.get"
             "params"= @{
@@ -45,7 +46,7 @@ Function Get-ZabbixItem {
           } | ConvertTo-Json -Depth 5
 	    }
         'Name' {
-	      $HostJSON = @{
+	      $ItemJSON = @{
             "jsonrpc"= "2.0"
             "method"= "item.get"
             "params"= @{
@@ -57,7 +58,7 @@ Function Get-ZabbixItem {
           } | ConvertTo-Json -Depth 5
 	    }
         'HostID' {
-	      $HostJSON = @{
+	      $ItemJSON = @{
             "jsonrpc"= "2.0"
             "method"= "item.get"
             "params"= @{
@@ -69,7 +70,7 @@ Function Get-ZabbixItem {
           } | ConvertTo-Json -Depth 5
 	    }
 	    default { 
-	      $HostJSON = @{
+	      $ItemJSON = @{
             "jsonrpc"= "2.0"
             "method"= "item.get"
             "params"= @{
@@ -81,9 +82,15 @@ Function Get-ZabbixItem {
         }
       }
       
-	  #$HostJSON
+	  if ($IncludePreprocessing) {
+	    $TempItemObj = $ItemJSON | ConvertFrom-Json
+		$TempItemObj.params |  Add-Member -NotePropertyName 'selectPreprocessing' -NotePropertyValue "extend"
+		$ItemJSON = $TempItemObj | ConvertTo-Json -Depth 5
+	  }
 	  
-	  $RM = Invoke-RestMethod -Method "POST" -Uri "$($Zabbix)" -ContentType "application/json" -Body $HostJSON
+	  #$ItemJSON
+	  
+	  $RM = Invoke-RestMethod -Method "POST" -Uri "$($Zabbix)" -ContentType "application/json" -Body $ItemJSON
 	  if ($RM.PSObject.Properties.Match('Result')) {
 	    $RetVal = $RM.Result
 	  }`
