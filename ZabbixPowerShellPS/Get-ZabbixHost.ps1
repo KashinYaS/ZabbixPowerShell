@@ -5,11 +5,12 @@ Function Get-ZabbixHost {
     [PARAMETER(Mandatory=$True, Position=1,HelpMessage = "Username",ParameterSetName='Default')][PARAMETER(ParameterSetName='ID')][PARAMETER(ParameterSetName='Name')][String]$Username,
     [PARAMETER(Mandatory=$True, Position=2,HelpMessage = "Password",ParameterSetName='Default')][PARAMETER(ParameterSetName='ID')][PARAMETER(ParameterSetName='Name')][String]$Password,
     [PARAMETER(Mandatory=$False,Position=3,HelpMessage = "Silent - if set then function will not show error messages",ParameterSetName='Default')][PARAMETER(ParameterSetName='ID')][PARAMETER(ParameterSetName='Name')][bool]$Silent=$false,
-    [PARAMETER(Mandatory=$False,Position=4,HelpMessage = "IncludeTemplateID",ParameterSetName='Default')][PARAMETER(ParameterSetName='ID')][PARAMETER(ParameterSetName='Name')][switch]$IncludeTemplateID,
-    [PARAMETER(Mandatory=$False,Position=5,HelpMessage = "IncludeInterfaces",ParameterSetName='Default')][PARAMETER(ParameterSetName='ID')][PARAMETER(ParameterSetName='Name')][switch]$IncludeInterfaces,
-    [PARAMETER(Mandatory=$False,Position=6,HelpMessage = "IncludeItems",ParameterSetName='Default')][PARAMETER(ParameterSetName='ID')][PARAMETER(ParameterSetName='Name')][switch]$IncludeItems,
-	[PARAMETER(Mandatory=$True, Position=7,HelpMessage = "ID",ParameterSetName='ID')][int[]]$ID = $null,
-	[PARAMETER(Mandatory=$True, Position=7,HelpMessage = "Name",ParameterSetName='Name')][String[]]$Name = $null
+    [PARAMETER(Mandatory=$False,Position=4,HelpMessage = "Include Template ID",ParameterSetName='Default')][PARAMETER(ParameterSetName='ID')][PARAMETER(ParameterSetName='Name')][switch]$IncludeTemplateID,
+    [PARAMETER(Mandatory=$False,Position=5,HelpMessage = "Include Interfaces",ParameterSetName='Default')][PARAMETER(ParameterSetName='ID')][PARAMETER(ParameterSetName='Name')][switch]$IncludeInterfaces,
+    [PARAMETER(Mandatory=$False,Position=6,HelpMessage = "Include Items",ParameterSetName='Default')][PARAMETER(ParameterSetName='ID')][PARAMETER(ParameterSetName='Name')][switch]$IncludeItems,
+    [PARAMETER(Mandatory=$False,Position=7,HelpMessage = "Include Triggers",ParameterSetName='Default')][PARAMETER(ParameterSetName='ID')][PARAMETER(ParameterSetName='Name')][switch]$IncludeTriggers,
+	[PARAMETER(Mandatory=$True, Position=8,HelpMessage = "ID",ParameterSetName='ID')][int[]]$ID = $null,
+	[PARAMETER(Mandatory=$True, Position=8,HelpMessage = "Name",ParameterSetName='Name')][String[]]$Name = $null
   )
   $RetVal = $null
  
@@ -86,6 +87,12 @@ Function Get-ZabbixHost {
 	  if ($IncludeItems) {
 	    $TempHostObj = $HostJSON | ConvertFrom-Json
 		$TempHostObj.params |  Add-Member -NotePropertyName 'selectItems' -NotePropertyValue "extend"
+		$HostJSON = $TempHostObj | ConvertTo-Json -Depth 5
+	  }
+
+	  if ($IncludeTriggers) {
+	    $TempHostObj = $HostJSON | ConvertFrom-Json
+		$TempHostObj.params |  Add-Member -NotePropertyName 'selectTriggers' -NotePropertyValue "extend"
 		$HostJSON = $TempHostObj | ConvertTo-Json -Depth 5
 	  }
 	  

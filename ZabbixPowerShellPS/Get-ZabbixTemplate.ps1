@@ -5,12 +5,17 @@ Function Get-ZabbixTemplate {
     [PARAMETER(Mandatory=$True, Position=1,HelpMessage = "Username",ParameterSetName='Default')][PARAMETER(ParameterSetName='ID')][PARAMETER(ParameterSetName='Name')][PARAMETER(ParameterSetName='HostID')][String]$Username,
     [PARAMETER(Mandatory=$True, Position=2,HelpMessage = "Password",ParameterSetName='Default')][PARAMETER(ParameterSetName='ID')][PARAMETER(ParameterSetName='Name')][PARAMETER(ParameterSetName='HostID')][String]$Password,
     [PARAMETER(Mandatory=$False,Position=3,HelpMessage = "Silent - if set then function will not show error messages",ParameterSetName='Default')][PARAMETER(ParameterSetName='ID')][PARAMETER(ParameterSetName='Name')][PARAMETER(ParameterSetName='HostID')][bool]$Silent=$false,
-	[PARAMETER(Mandatory=$True, Position=4,HelpMessage = "Template Id",ParameterSetName='ID')][int[]]$ID = $null,
-	[PARAMETER(Mandatory=$True, Position=4,HelpMessage = "Host Id to get host's template only",ParameterSetName='HostID')][int[]]$HostID = $null,
-	[PARAMETER(Mandatory=$True, Position=4,HelpMessage = "Template Name",ParameterSetName='Name')][String[]]$Name = $null
+    [PARAMETER(Mandatory=$False,Position=4,HelpMessage = "Include Items",ParameterSetName='Default')][PARAMETER(ParameterSetName='ID')][PARAMETER(ParameterSetName='Name')][switch]$IncludeItems,
+    [PARAMETER(Mandatory=$False,Position=5,HelpMessage = "Include Triggers",ParameterSetName='Default')][PARAMETER(ParameterSetName='ID')][PARAMETER(ParameterSetName='Name')][switch]$IncludeTriggers,
+    [PARAMETER(Mandatory=$False,Position=6,HelpMessage = "Include Applications",ParameterSetName='Default')][PARAMETER(ParameterSetName='ID')][PARAMETER(ParameterSetName='Name')][switch]$IncludeApplications,
+	[PARAMETER(Mandatory=$True, Position=7,HelpMessage = "Template Id",ParameterSetName='ID')][int[]]$ID = $null,
+	[PARAMETER(Mandatory=$True, Position=7,HelpMessage = "Host Id to get host's template only",ParameterSetName='HostID')][int[]]$HostID = $null,
+	[PARAMETER(Mandatory=$True, Position=7,HelpMessage = "Template Name",ParameterSetName='Name')][String[]]$Name = $null
   )
   $RetVal = $null
- 
+
+  $Zabbix = New-ZabbixAPIURL -Zabbix $Zabbix
+	
   $AuthToken = ''
   $UserLoginJSON = @{
     "jsonrpc"= "2.0"
@@ -79,6 +84,24 @@ Function Get-ZabbixTemplate {
         }
       }
       
+	  if ($IncludeItems) {
+	    $TempTemplateObj = $TemplateJSON | ConvertFrom-Json
+		$TempTemplateObj.params |  Add-Member -NotePropertyName 'selectItems' -NotePropertyValue "extend"
+		$TemplateJSON = $TempTemplateObj | ConvertTo-Json -Depth 5
+	  }
+
+	  if ($IncludeTriggers) {
+	    $TempTemplateObj = $TemplateJSON | ConvertFrom-Json
+		$TempTemplateObj.params |  Add-Member -NotePropertyName 'selectTriggers' -NotePropertyValue "extend"
+		$TemplateJSON = $TempTemplateObj | ConvertTo-Json -Depth 5
+	  }
+	  
+	  if ($IncludeApplications) {
+	    $TempTemplateObj = $TemplateJSON | ConvertFrom-Json
+		$TempTemplateObj.params |  Add-Member -NotePropertyName 'selectApplications' -NotePropertyValue "extend"
+		$TemplateJSON = $TempTemplateObj | ConvertTo-Json -Depth 5
+	  }	  
+
 	  #$TemplateJSON
 	  
 	  $RM = Invoke-RestMethod -Method "POST" -Uri "$($Zabbix)" -ContentType "application/json" -Body $TemplateJSON

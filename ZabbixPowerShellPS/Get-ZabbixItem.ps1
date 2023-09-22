@@ -5,7 +5,7 @@ Function Get-ZabbixItem {
     [PARAMETER(Mandatory=$True, Position=1,HelpMessage = "Username",ParameterSetName='Default')][PARAMETER(ParameterSetName='ID')][PARAMETER(ParameterSetName='Name')][PARAMETER(ParameterSetName='HostID')][String]$Username,
     [PARAMETER(Mandatory=$True, Position=2,HelpMessage = "Password",ParameterSetName='Default')][PARAMETER(ParameterSetName='ID')][PARAMETER(ParameterSetName='Name')][PARAMETER(ParameterSetName='HostID')][String]$Password,
     [PARAMETER(Mandatory=$False,Position=3,HelpMessage = "Silent - if set then function will not show error messages",ParameterSetName='Default')][PARAMETER(ParameterSetName='ID')][PARAMETER(ParameterSetName='Name')][PARAMETER(ParameterSetName='HostID')][bool]$Silent=$false,
-    [PARAMETER(Mandatory=$False,Position=4,HelpMessage = "IncludePreprocessing",ParameterSetName='Default')][PARAMETER(ParameterSetName='ID')][PARAMETER(ParameterSetName='Name')][switch]$IncludePreprocessing,
+    [PARAMETER(Mandatory=$False,Position=4,HelpMessage = "Include Preprocessing",ParameterSetName='Default')][PARAMETER(ParameterSetName='ID')][PARAMETER(ParameterSetName='Name')][switch]$IncludePreprocessing,
 	[PARAMETER(Mandatory=$True, Position=5,HelpMessage = "ID",ParameterSetName='ID')][int[]]$ID = $null,
 	[PARAMETER(Mandatory=$True, Position=5,HelpMessage = "Name",ParameterSetName='Name')][String[]]$Name = $null,
 	[PARAMETER(Mandatory=$True, Position=5,HelpMessage = "Host ID",ParameterSetName='HostID')][int[]]$HostID = $null

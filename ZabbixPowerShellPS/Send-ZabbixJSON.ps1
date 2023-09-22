@@ -10,7 +10,7 @@ Function Send-ZabbixJSON {
   $RetVal = $null
  
   $Zabbix = New-ZabbixAPIURL -Zabbix $Zabbix
-  
+ 
   $AuthToken = ''
   $UserLoginJSON = @{
     "jsonrpc"= "2.0"
@@ -32,9 +32,12 @@ Function Send-ZabbixJSON {
       $JSONObject.auth = $AuthToken
 	  $JSONToSend = $JSONObject | ConvertTo-Json -Depth 7
 
-	  $RM = Invoke-RestMethod -Method "POST" -Uri "$($Zabbix)" -ContentType "application/json" -Body $JSONToSend
-	  if ($RM.PSObject.Properties.Match('Result')) {
-		$RetVal = $RM.Result
+	  #$RM = Invoke-RestMethod -Method "POST" -Uri "$($Zabbix)" -ContentType "application/json; charset=utf-8" -Body $JSONToSend
+	  # switched to Invoke-WebRequest due to incorrect UTF-8 in Invoke-RestMethod
+	  $RM = Invoke-WebRequest -Method "POST" -Uri "$($Zabbix)" -ContentType "application/json; charset=utf-8" -Body "$JSONToSend"
+	  #if ($RM.PSObject.Properties.Match('Result')) {
+	  if ($RM.StatusCode -eq 200 -and ($RM.Content)) {
+		$RetVal = ($RM.Content | ConvertFrom-Json ).result
 	  }`
       else {
 	    if (-not $Silent) {
@@ -50,7 +53,8 @@ Function Send-ZabbixJSON {
 	    auth = "$($AuthToken)"
         id = Get-Random
       } | ConvertTo-Json -Depth 5
-      $RM = Invoke-RestMethod -Method "POST" -Uri "$($Zabbix)" -ContentType "application/json" -Body $UserLogoffJSON	 
+      $RM = Invoke-RestMethod -Method "POST" -Uri "$($Zabbix)" -ContentType "application/json; charset=utf-8" -Body $UserLogoffJSON	 
+	  
 
     }`
     else {
